@@ -2,11 +2,19 @@
 import express from 'express';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
+
 app.use(express.json());
+
+app.use(cors({
+  origin: 'http://localhost:4010', // <--- tu frontend
+  credentials: true
+}));
+
 
 const { AUTH_SERVICE, PRODUCT_SERVICE, CART_SERVICE } = process.env;
 
@@ -46,7 +54,17 @@ app.get('/api/cart', async (req, res) => {
   }
 });
 
-// Y así vas agregando más rutas...
+app.get('/api/products', async (req, res) => {
+  try {
+    const response = await axios.get(`${PRODUCT_SERVICE}/api/products`, req.body);
+    res.status(response.status).json(response.data);
+
+  } catch (error) {
+    res.status(error.response?.status || 500).json({ error: error.message });
+  }
+});
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
